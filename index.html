@@ -163,6 +163,27 @@
             if (!product) return '';
             return this.extractSize(product.title);
           },
+          getWoodImage(materialTitle) {
+            if (!materialTitle) return '';
+
+            // Explicit mapping for materials that don't follow simple pattern
+            const mapping = {
+              'Ebony - Rustic': 'ebony_rustic',
+              'Base Planks Japanese House Wooden Floor': 'base_planks_japan',
+            };
+
+            // Check explicit mapping first
+            if (mapping[materialTitle]) {
+              return `images/${mapping[materialTitle]}.png`;
+            }
+
+            // Default: convert to lowercase, replace spaces with underscores
+            const filename = materialTitle
+              .toLowerCase()
+              .replace(/\s+/g, '_')
+              .replace(/[^a-z0-9_]/g, '');
+            return `images/${filename}.png`;
+          },
         },
       }).mount('#app');
     </script>
@@ -272,7 +293,10 @@
               @click="shim.sendProductMaterial(shim.productSlots[0]?.id, material.id)"
               v-for="material in shim.productSlots[0]?.enabledMaterials"
             >
-              <span class="swatch-color wood-texture"></span>
+              <span
+                class="swatch-color wood-texture"
+                :style="{ backgroundImage: 'url(' + getWoodImage(material.title) + ')' }"
+              ></span>
             </button>
           </div>
         </div>

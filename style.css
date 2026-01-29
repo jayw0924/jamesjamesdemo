@@ -346,29 +346,8 @@ body {
   background-size: cover;
   background-position: center;
   background-repeat: no-repeat;
-}
-
-/* Wood texture images */
-.wood-swatch:nth-child(1) .wood-texture {
-  background-image: url('images/java_aluma_teak.png');
-}
-.wood-swatch:nth-child(2) .wood-texture {
-  background-image: url('images/authentic_teak.png');
-}
-.wood-swatch:nth-child(3) .wood-texture {
-  background-image: url('images/base_planks_japan.png');
-}
-.wood-swatch:nth-child(4) .wood-texture {
-  background-image: url('images/dark_walnut_stain.png');
-}
-.wood-swatch:nth-child(5) .wood-texture {
-  background-image: url('images/dark_oak_lacquer.png');
-}
-.wood-swatch:nth-child(6) .wood-texture {
-  background-image: url('images/slate_jagger.png');
-}
-.wood-swatch:nth-child(7) .wood-texture {
-  background-image: url('images/ebony_rustic.png');
+  /* Fallback gradient if image doesn't load */
+  background-color: var(--color-border);
 }
 
 /* Size Selector */
