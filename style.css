@@ -338,47 +338,37 @@ body {
 }
 
 .wood-swatch {
-  width: 44px;
-  height: 44px;
+  width: 64px;
+  height: 64px;
 }
 
 .wood-texture {
-  /* Placeholder wood grain pattern - replace with actual textures later */
-  background: linear-gradient(
-    135deg,
-    #c4a77d 0%,
-    #b8996b 25%,
-    #c9a876 50%,
-    #b5915e 75%,
-    #c4a77d 100%
-  );
-  background-size: 8px 8px;
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
 }
 
-/* Different wood texture variations based on position */
+/* Wood texture images */
 .wood-swatch:nth-child(1) .wood-texture {
-  background: linear-gradient(135deg, #e8dcc8 0%, #d4c4a8 50%, #c9b896 100%);
+  background-image: url('images/java_aluma_teak.png');
 }
 .wood-swatch:nth-child(2) .wood-texture {
-  background: linear-gradient(135deg, #d4c4a8 0%, #c4b088 50%, #b8a070 100%);
+  background-image: url('images/authentic_teak.png');
 }
 .wood-swatch:nth-child(3) .wood-texture {
-  background: linear-gradient(135deg, #c9a876 0%, #b8956a 50%, #a8845e 100%);
+  background-image: url('images/base_planks_japan.png');
 }
 .wood-swatch:nth-child(4) .wood-texture {
-  background: linear-gradient(135deg, #a8845e 0%, #987452 50%, #886446 100%);
+  background-image: url('images/dark_walnut_stain.png');
 }
 .wood-swatch:nth-child(5) .wood-texture {
-  background: linear-gradient(135deg, #7a5d40 0%, #6a4d30 50%, #5a4028 100%);
+  background-image: url('images/dark_oak_lacquer.png');
 }
 .wood-swatch:nth-child(6) .wood-texture {
-  background: linear-gradient(135deg, #5a4028 0%, #4a3520 50%, #3a2a18 100%);
+  background-image: url('images/slate_jagger.png');
 }
 .wood-swatch:nth-child(7) .wood-texture {
-  background: linear-gradient(135deg, #3d3225 0%, #2d2418 50%, #1f1810 100%);
-}
-.wood-swatch:nth-child(8) .wood-texture {
-  background: linear-gradient(135deg, #2a221a 0%, #1a1510 50%, #100d08 100%);
+  background-image: url('images/ebony_rustic.png');
 }
 
 /* Size Selector */
