@@ -1,0 +1,392 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta content="width=device-width, initial-scale=1.0" name="viewport" />
+    <title>James+James Furniture | Heirloom Quality, Handcrafted in the Ozarks</title>
+    <meta
+      name="description"
+      content="Handcrafted furniture made in the Ozarks. Configure your perfect piece with our interactive 3D configurator."
+    />
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;500;600&family=Roboto:wght@300;400;500&display=swap" rel="stylesheet">
+    <link href="style.css" rel="stylesheet" />
+
+    <script type="importmap">
+      {
+        "imports": {
+          "vue": "https://unpkg.com/vue@3/dist/vue.esm-browser.js"
+        }
+      }
+    </script>
+
+    <script type="module">
+      import {
+        GetCallToActionInformation,
+        GetPdf,
+        GetScreenshot,
+        integrateMetabox,
+        saveImage,
+        SetEnvironment,
+        SetEnvironmentMaterial,
+        SetProduct,
+        SetProductMaterial,
+      } from 'https://cdn.jsdelivr.net/npm/@3dsource/metabox-front-api@latest/+esm';
+      import { createApp } from 'vue';
+
+      class Shim {
+        state = null;
+        ecomConfigurator = null;
+        product = null;
+        products = null;
+        environments = null;
+        productSlots = null;
+        environmentSlots = null;
+        productMaterialsIds = null;
+        api = {};
+
+        ready(api) {
+          this.api = api;
+          this.addApiEventListeners();
+        }
+
+        addApiEventListeners() {
+          this.api.addEventListener('configuratorDataUpdated', (data) =>
+            this.updateConfiguratorData(data),
+          );
+          this.api.addEventListener('ecomConfiguratorDataUpdated', (data) => {
+            this.updateEcomConfiguratorData(data);
+          });
+          this.api.addEventListener('screenshotReady', (data) => {
+            saveImage(data, 'Render.png');
+          });
+        }
+
+        updateConfiguratorData(data) {
+          const {
+            productId,
+            configurator,
+            productMaterialsIds,
+            environmentId,
+            environmentMaterialsIds,
+          } = data;
+
+          this.productMaterialsIds = productMaterialsIds;
+          if (
+            !productId ||
+            !configurator ||
+            Object.keys(this.productMaterialsIds).length === 0
+          ) {
+            return;
+          }
+
+          this.state = data;
+          this.products =
+            configurator.products?.map((item) => item.product) || [];
+          this.environments =
+            configurator.environments?.map((item) => item.environment) || [];
+          this.product = this.products.find(
+            (product) => product.id === productId,
+          );
+          const environment = this.environments.find(
+            (env) => env.id === environmentId,
+          );
+          this.productSlots =
+            this.product?.slots.filter(
+              (slot) => slot.enabledMaterials.length > 0,
+            ) || [];
+          this.environmentSlots = environment?.slots.filter(
+            (slot) => slot.enabledMaterials.length > 0,
+          );
+        }
+        updateEcomConfiguratorData(data) {
+          this.ecomConfigurator = data;
+        }
+        sendProduct(productId) {
+          this.api.sendCommandToMetabox(new SetProduct(productId));
+        }
+        sendEnvironment(environmentId) {
+          this.api.sendCommandToMetabox(new SetEnvironment(environmentId));
+        }
+        sendProductMaterial(slotId, materialId) {
+          this.api.sendCommandToMetabox(
+            new SetProductMaterial(slotId, materialId),
+          );
+        }
+        sendEnvironmentMaterial(slotId, materialId) {
+          this.api.sendCommandToMetabox(
+            new SetEnvironmentMaterial(slotId, materialId),
+          );
+        }
+        getRender(size) {
+          this.api.sendCommandToMetabox(new GetScreenshot('image/png', size));
+        }
+        getPDF() {
+          this.api.sendCommandToMetabox(new GetPdf());
+        }
+        getCtaInformation() {
+          this.api.sendCommandToMetabox(new GetCallToActionInformation());
+        }
+      }
+
+      createApp({
+        data() {
+          return {
+            shim: new Shim(),
+            environmentExpanded: false
+          };
+        },
+        mounted() {
+          // Assuming you have the `integrateMetabox` and other related functions already imported
+          integrateMetabox(
+            '646ceb73-26bd-4937-b732-8195370f4899',
+            'embed3DSource',
+            (api) => {
+              this.shim.ready(api);
+            },
+            {
+              standalone: true,
+              introImage: 'https://metabox-api.3dsource.com/uploads/render/78124a89-7688-44ea-9d44-5d5671132e14/result.png',
+              loadingImage: 'https://metabox-api.3dsource.com/uploads/render/78124a89-7688-44ea-9d44-5d5671132e14/result.png',
+            },
+          );
+        },
+        methods: {
+          extractSize(title) {
+            // Extract the size number from titles like "Kensington_DT_60"
+            const match = title.match(/(\d+)$/);
+            return match ? match[1] + '"' : title;
+          },
+          getSelectedSize() {
+            const product = this.shim.product;
+            if (!product) return '';
+            return this.extractSize(product.title);
+          },
+        },
+      }).mount('#app');
+    </script>
+  </head>
+  <body>
+    <noscript
+      ><strong
+        >This app requires JavaScript to run. Please enable JavaScript in your
+        browser.</strong
+      ></noscript
+    >
+
+    <!-- Site Header -->
+    <header class="site-header">
+      <div class="header-container">
+        <a href="#" class="logo">
+          <span class="logo-text">James<span class="logo-plus">+</span>James</span>
+        </a>
+        <nav class="main-nav">
+          <a href="#">Dining</a>
+          <a href="#">Living</a>
+          <a href="#">Bedroom</a>
+          <a href="#">Office</a>
+          <a href="#">Custom</a>
+        </nav>
+        <div class="header-actions">
+          <button class="icon-btn" aria-label="Search">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <circle cx="11" cy="11" r="8"></circle>
+              <path d="m21 21-4.35-4.35"></path>
+            </svg>
+          </button>
+          <button class="icon-btn" aria-label="Account">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
+              <circle cx="12" cy="7" r="4"></circle>
+            </svg>
+          </button>
+          <button class="icon-btn cart-btn" aria-label="Cart">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"></path>
+              <line x1="3" y1="6" x2="21" y2="6"></line>
+              <path d="M16 10a4 4 0 0 1-8 0"></path>
+            </svg>
+          </button>
+        </div>
+      </div>
+    </header>
+
+    <!-- Main Content -->
+    <main class="product-page" id="app">
+      <div class="product-gallery">
+        <div class="gallery-container">
+          <span class="product-badge">Best Seller</span>
+          <div id="embed3DSource">
+            <!-- 3D Configurator -->
+          </div>
+        </div>
+      </div>
+
+      <div class="product-info" v-if="!shim.state">
+        <div class="loading-state" role="status" aria-live="polite">
+          <div class="loading-spinner"></div>
+          <p>Loading configurator...</p>
+        </div>
+      </div>
+
+      <div class="product-info" v-else>
+        <div class="product-header">
+          <p class="product-category">Handcrafted in the Ozarks</p>
+          <h1 class="product-title">Heirloom Dining Table</h1>
+          <p class="product-tagline">Heirloom quality, built to last generations</p>
+        </div>
+
+        <!-- Size Selector -->
+        <div class="option-group size-section">
+          <div class="option-header">
+            <label class="option-label">Length : <span class="selected-value">{{ getSelectedSize() }}</span></label>
+            <a href="#" class="option-link">Seating Guide</a>
+          </div>
+          <div class="size-buttons">
+            <button
+              type="button"
+              class="size-btn"
+              :key="product.id"
+              :class="{ active: shim.state.productId === product.id }"
+              @click="shim.sendProduct(product.id)"
+              v-for="product in shim.products"
+            >
+              {{ extractSize(product.title) }}
+            </button>
+          </div>
+        </div>
+
+        <!-- Wood Selection -->
+        <div class="option-group wood-section" v-if="shim.productSlots && shim.productSlots.length > 0">
+          <div class="option-header">
+            <label class="option-label">Wood : <span class="selected-value">{{ shim.productSlots[0]?.enabledMaterials.find(m => shim.productMaterialsIds?.[shim.state.productId]?.[shim.productSlots[0]?.id] === m.id)?.title || 'Select' }}</span></label>
+          </div>
+          <div class="wood-swatches">
+            <button
+              type="button"
+              class="swatch wood-swatch"
+              :key="material.id"
+              :class="{ active: shim.productMaterialsIds?.[shim.state.productId]?.[shim.productSlots[0]?.id] === material.id }"
+              :title="material.title"
+              @click="shim.sendProductMaterial(shim.productSlots[0]?.id, material.id)"
+              v-for="material in shim.productSlots[0]?.enabledMaterials"
+            >
+              <span class="swatch-color wood-texture"></span>
+            </button>
+          </div>
+        </div>
+
+        <!-- Collapsible Environment Section -->
+        <div v-if="shim.environmentSlots" class="environment-accordion">
+          <button
+            type="button"
+            class="accordion-toggle"
+            :class="{ expanded: environmentExpanded }"
+            @click="environmentExpanded = !environmentExpanded"
+          >
+            <span>View Environment</span>
+            <svg class="accordion-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M6 9l6 6 6-6"></path>
+            </svg>
+          </button>
+          <div class="accordion-content" :class="{ expanded: environmentExpanded }">
+            <!-- Environment Select -->
+            <div class="env-dropdown">
+              <label for="env-select">Environment</label>
+              <select
+                @change="shim.sendEnvironment(shim.state.environmentId)"
+                id="env-select"
+                v-model="shim.state.environmentId"
+              >
+                <option
+                  :key="env.id"
+                  :value="env.id"
+                  v-for="env in shim.environments"
+                >
+                  {{ env.title }}
+                </option>
+              </select>
+            </div>
+            <!-- Floor & Wall Dropdowns -->
+            <div
+              class="env-dropdown"
+              v-for="slot in shim.environmentSlots"
+              :key="slot.id"
+            >
+              <label :for="'slot-' + slot.id">{{ slot.label }}</label>
+              <select
+                :id="'slot-' + slot.id"
+                :value="shim.state.environmentMaterialsIds?.[shim.state.environmentId]?.[slot.id]"
+                @change="shim.sendEnvironmentMaterial(slot.id, $event.target.value)"
+              >
+                <option
+                  :key="material.id"
+                  :value="material.id"
+                  v-for="material in slot.enabledMaterials"
+                >
+                  {{ material.title }}
+                </option>
+              </select>
+            </div>
+          </div>
+        </div>
+
+        <!-- Quantity Selector -->
+        <div class="quantity-section">
+          <label class="quantity-label">Quantity</label>
+          <div class="quantity-control">
+            <button type="button" class="qty-btn" aria-label="Decrease quantity">
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <line x1="5" y1="12" x2="19" y2="12"></line>
+              </svg>
+            </button>
+            <span class="qty-value">1</span>
+            <button type="button" class="qty-btn" aria-label="Increase quantity">
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <line x1="12" y1="5" x2="12" y2="19"></line>
+                <line x1="5" y1="12" x2="19" y2="12"></line>
+              </svg>
+            </button>
+          </div>
+        </div>
+
+        <!-- Add to Cart -->
+        <div class="action-buttons">
+          <button type="button" class="btn-primary btn-cart">Add to Cart</button>
+          <button type="button" class="btn-secondary" @click="shim.getRender({ x: 1024, y: 1024 })">
+            Save Image
+          </button>
+          <button type="button" class="btn-secondary" @click="shim.getPDF()">
+            Download PDF
+          </button>
+        </div>
+
+        <div class="product-features">
+          <div class="feature">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+              <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path>
+            </svg>
+            <span>Lifetime Warranty</span>
+          </div>
+          <div class="feature">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+              <rect x="1" y="3" width="15" height="13"></rect>
+              <polygon points="16 8 20 8 23 11 23 16 16 16 16 8"></polygon>
+              <circle cx="5.5" cy="18.5" r="2.5"></circle>
+              <circle cx="18.5" cy="18.5" r="2.5"></circle>
+            </svg>
+            <span>White Glove Delivery</span>
+          </div>
+          <div class="feature">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+              <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path>
+              <circle cx="12" cy="10" r="3"></circle>
+            </svg>
+            <span>Made in USA</span>
+          </div>
+        </div>
+      </div>
+    </main>
+  </body>
+</html>
