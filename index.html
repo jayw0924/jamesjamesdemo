@@ -134,7 +134,11 @@
         data() {
           return {
             shim: new Shim(),
-            environmentExpanded: false
+            environmentExpanded: false,
+            finishGuideOpen: false,
+            selectedFinish: null,
+            seatingGuideOpen: false,
+            selectedSize: null
           };
         },
         mounted() {
@@ -183,6 +187,23 @@
               .replace(/\s+/g, '_')
               .replace(/[^a-z0-9_]/g, '');
             return `images/${filename}.png`;
+          },
+          getSeatingImage(productTitle) {
+            if (!productTitle) return '';
+            const match = productTitle.match(/(\d+)$/);
+            if (match) {
+              return `images/seating/seating_${match[1]}.png`;
+            }
+            return '';
+          },
+          getSeatingCapacity(productTitle) {
+            const match = productTitle.match(/(\d+)$/);
+            if (!match) return '';
+            const size = parseInt(match[1]);
+            if (size <= 60) return '4-6 people';
+            if (size <= 72) return '6-8 people';
+            if (size <= 86) return '8-10 people';
+            return '10-12 people';
           },
         },
       }).mount('#app');
@@ -262,7 +283,7 @@
         <div class="option-group size-section">
           <div class="option-header">
             <label class="option-label">Length : <span class="selected-value">{{ getSelectedSize() }}</span></label>
-            <a href="#" class="option-link">Seating Guide</a>
+            <a href="#" class="option-link" @click.prevent="seatingGuideOpen = true">Seating Guide</a>
           </div>
           <div class="size-buttons">
             <button
@@ -282,6 +303,7 @@
         <div class="option-group wood-section" v-if="shim.productSlots && shim.productSlots.length > 0">
           <div class="option-header">
             <label class="option-label">Wood : <span class="selected-value">{{ shim.productSlots[0]?.enabledMaterials.find(m => shim.productMaterialsIds?.[shim.state.productId]?.[shim.productSlots[0]?.id] === m.id)?.title || 'Select' }}</span></label>
+            <a href="#" class="option-link" @click.prevent="finishGuideOpen = true">Finish Guide</a>
           </div>
           <div class="wood-swatches">
             <button
@@ -408,6 +430,99 @@
               <circle cx="12" cy="10" r="3"></circle>
             </svg>
             <span>Made in USA</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Finish Guide Modal -->
+      <div class="modal-overlay" v-if="finishGuideOpen" @click.self="finishGuideOpen = false">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h2 class="modal-title">Finish Guide</h2>
+            <button type="button" class="modal-close" @click="finishGuideOpen = false" aria-label="Close">
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <line x1="18" y1="6" x2="6" y2="18"></line>
+                <line x1="6" y1="6" x2="18" y2="18"></line>
+              </svg>
+            </button>
+          </div>
+          <div class="modal-body" v-if="shim.productSlots && shim.productSlots.length > 0">
+            <div class="finish-grid">
+              <button
+                type="button"
+                class="finish-swatch-large"
+                :key="material.id"
+                :class="{ active: selectedFinish?.id === material.id }"
+                @click="selectedFinish = material"
+                v-for="material in shim.productSlots[0]?.enabledMaterials"
+              >
+                <span
+                  class="finish-swatch-image"
+                  :style="{ backgroundImage: 'url(' + getWoodImage(material.title) + ')' }"
+                ></span>
+              </button>
+            </div>
+            <div class="finish-detail" v-if="selectedFinish">
+              <div class="finish-detail-image" :style="{ backgroundImage: 'url(' + getWoodImage(selectedFinish.title) + ')' }"></div>
+              <div class="finish-detail-info">
+                <h3 class="finish-detail-title">{{ selectedFinish.title }}</h3>
+                <p class="finish-detail-desc">A beautiful wood finish that showcases the natural grain and character of solid hardwood, handcrafted to perfection.</p>
+                <button
+                  type="button"
+                  class="btn-primary"
+                  @click="shim.sendProductMaterial(shim.productSlots[0]?.id, selectedFinish.id); finishGuideOpen = false"
+                >
+                  Select This Finish
+                </button>
+              </div>
+            </div>
+            <p class="finish-hint" v-else>Click a swatch above to see details</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Seating Guide Modal -->
+      <div class="modal-overlay" v-if="seatingGuideOpen" @click.self="seatingGuideOpen = false">
+        <div class="modal-content modal-content-wide">
+          <div class="modal-header">
+            <h2 class="modal-title">Seating Guide</h2>
+            <button type="button" class="modal-close" @click="seatingGuideOpen = false" aria-label="Close">
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <line x1="18" y1="6" x2="6" y2="18"></line>
+                <line x1="6" y1="6" x2="18" y2="18"></line>
+              </svg>
+            </button>
+          </div>
+          <div class="modal-body">
+            <div class="seating-grid">
+              <button
+                type="button"
+                class="seating-option"
+                :key="product.id"
+                :class="{ active: selectedSize?.id === product.id }"
+                @click="selectedSize = product"
+                v-for="product in shim.products"
+              >
+                <div class="seating-option-image" :style="{ backgroundImage: 'url(' + getSeatingImage(product.title) + ')' }"></div>
+                <div class="seating-option-label">{{ extractSize(product.title) }}</div>
+              </button>
+            </div>
+            <div class="seating-detail" v-if="selectedSize">
+              <div class="seating-detail-image" :style="{ backgroundImage: 'url(' + getSeatingImage(selectedSize.title) + ')' }"></div>
+              <div class="seating-detail-info">
+                <h3 class="seating-detail-title">{{ extractSize(selectedSize.title) }} Table</h3>
+                <p class="seating-detail-capacity">Comfortably seats {{ getSeatingCapacity(selectedSize.title) }}</p>
+                <p class="seating-detail-desc">Perfect for family gatherings and dinner parties. Each table is handcrafted from solid hardwood with meticulous attention to detail.</p>
+                <button
+                  type="button"
+                  class="btn-primary"
+                  @click="shim.sendProduct(selectedSize.id); seatingGuideOpen = false"
+                >
+                  Select This Size
+                </button>
+              </div>
+            </div>
+            <p class="finish-hint" v-else>Click a size above to see details</p>
           </div>
         </div>
       </div>
