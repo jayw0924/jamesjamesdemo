@@ -283,7 +283,7 @@
         <div class="option-group size-section">
           <div class="option-header">
             <label class="option-label">Length : <span class="selected-value">{{ getSelectedSize() }}</span></label>
-            <a href="#" class="option-link" @click.prevent="seatingGuideOpen = true">Seating Guide</a>
+            <a href="#" class="option-link" @click.prevent="selectedSize = shim.product; seatingGuideOpen = true">Seating Guide</a>
           </div>
           <div class="size-buttons">
             <button
@@ -303,7 +303,7 @@
         <div class="option-group wood-section" v-if="shim.productSlots && shim.productSlots.length > 0">
           <div class="option-header">
             <label class="option-label">Wood : <span class="selected-value">{{ shim.productSlots[0]?.enabledMaterials.find(m => shim.productMaterialsIds?.[shim.state.productId]?.[shim.productSlots[0]?.id] === m.id)?.title || 'Select' }}</span></label>
-            <a href="#" class="option-link" @click.prevent="finishGuideOpen = true">Finish Guide</a>
+            <a href="#" class="option-link" @click.prevent="selectedFinish = shim.productSlots[0]?.enabledMaterials.find(m => shim.productMaterialsIds?.[shim.state.productId]?.[shim.productSlots[0]?.id] === m.id); finishGuideOpen = true">Finish Guide</a>
           </div>
           <div class="wood-swatches">
             <button
